@@ -23,6 +23,11 @@ func GetCommands() map[string]command {
 			Description: "Exit the Pokedex",
 			Callback: 	 commandExit,
 		},
+		"map": {
+			Name: 		 "map",
+			Description: "Get 20 maps of Pokemon game in forward.",
+			Callback: 	 commandMap,
+		},
 	}
 }
 
@@ -46,4 +51,8 @@ func commandExit() error {
 	return nil
 }
 
+func commandMap() error {
+	GetMaps(false)
+	return nil
+}
 //https://pokeapi.co/api/v2/location/?offset=0&limit=20
