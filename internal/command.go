@@ -8,7 +8,7 @@ import (
 type command struct {
 	Name string
 	Description string
-	Callback func() error
+	Callback func()
 }
 
 func GetCommands() map[string]command {
@@ -25,13 +25,18 @@ func GetCommands() map[string]command {
 		},
 		"map": {
 			Name: 		 "map",
-			Description: "Get 20 maps of Pokemon game in forward.",
+			Description: "Get maps forward.",
 			Callback: 	 commandMap,
+		},
+		"mapb": {
+			Name: 		 "mapb",
+			Description: "Get maps backward.",
+			Callback: 	 commandMapb,
 		},
 	}
 }
 
-func commandHelp() error {
+func commandHelp() {
 	fmt.Printf("\nWelcome to the Pokedex!\n")
 	fmt.Printf("Usage:\n\n")
 
@@ -41,18 +46,32 @@ func commandHelp() error {
 		fmt.Printf("%s: %s\n", command.Name, command.Description)
 	}
 
-	fmt.Println("")
-
-	return nil
+	fmt.Printf("\n")
 }
 
-func commandExit() error {
+func commandExit() {
 	os.Exit(0)
-	return nil
 }
 
-func commandMap() error {
-	GetMaps(false)
-	return nil
+func commandMap() {
+	response, err := GetNextMaps()
+	handleMapResponse(response, err)
 }
-//https://pokeapi.co/api/v2/location/?offset=0&limit=20
+
+func commandMapb() {
+	response, err := GetPreviousMaps()
+	handleMapResponse(response, err)
+}
+
+func handleMapResponse(response *MapResponse, err error) {
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	maps := response.Maps
+
+	for _, m := range maps {
+		fmt.Println(m.Name)
+	}
+}
