@@ -11,7 +11,7 @@ import (
 type MapResponse struct {
 	Next     *string `json:"next"`
 	Previous *string `json:"previous"`
-	Maps  []struct {
+	Maps     []struct {
 		Name string `json:"name"`
 		URL  string `json:"url"`
 	} `json:"results"`
@@ -28,29 +28,12 @@ func GetPreviousMaps() (*MapResponse, error) {
 }
 
 func getMaps(forward bool) (*MapResponse, error) {
-	urlString := "https://pokeapi.co/api/v2/location"
-
-	if currentResponse == nil && forward == false {
-		return nil, errors.New("You can't go backward !")
+	url, err := getURLFromCurrentResponse(forward)
+	if err != nil {
+		return nil, err
 	}
 
-	if currentResponse != nil {
-		if forward {
-			if currentResponse.Next == nil {
-				return nil, errors.New("All the maps has been discovered.")
-			} else {
-				urlString = *currentResponse.Next
-			}
-		} else {
-			if currentResponse.Previous == nil {
-				return nil, errors.New("You can't go backward !")
-			} else {
-				urlString = *currentResponse.Previous
-			}
-		}
-	}
-
-	res, err := http.Get(urlString)
+	res, err := http.Get(*url)
 	if err != nil {
 		return nil, err
 	}
@@ -67,14 +50,40 @@ func getMaps(forward bool) (*MapResponse, error) {
 		return nil, err
 	}
 
-	data := []byte(string(body))
+	data := []byte(body)
 	response := MapResponse{}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		error := errors.New("A problem happened when the program tries to decode the response.")
-     	return nil, error
+		return nil, error
 	}
 
 	currentResponse = &response
 	return &response, nil
+}
+
+func getURLFromCurrentResponse(forward bool) (*string, error) {
+	if currentResponse == nil && forward == false {
+		return nil, errors.New("You can't go backward !")
+	}
+
+	url := "https://pokeapi.co/api/v2/location"
+
+	if currentResponse != nil {
+		if forward {
+			if currentResponse.Next == nil {
+				return nil, errors.New("All the maps has been discovered.")
+			} else {
+				return currentResponse.Next, nil
+			}
+		} else {
+			if currentResponse.Previous == nil {
+				return nil, errors.New("You can't go backward !")
+			} else {
+				return currentResponse.Previous, nil
+			}
+		}
+	}
+
+	return &url, nil
 }
