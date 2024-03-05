@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type MapResponse struct {
@@ -18,16 +19,49 @@ type MapResponse struct {
 }
 
 var currentResponse *MapResponse
+var cache *Cache
 
 func GetNextMaps() (*MapResponse, error) {
-	return getMaps(true)
+	response, ok := getMapsFromCache(true)
+	if !ok {
+		return getMapsFromApi(true)
+	}
+	return response, nil
 }
 
 func GetPreviousMaps() (*MapResponse, error) {
-	return getMaps(false)
+	response, ok := getMapsFromCache(false)
+	if !ok {
+		return getMapsFromApi(false)
+	}
+	return response, nil
 }
 
-func getMaps(forward bool) (*MapResponse, error) {
+func getMapsFromCache(forward bool) (*MapResponse, bool) {
+	if cache == nil {
+		cache = NewCache(10 * time.Second)
+		return nil, false
+	}
+
+	url, err := getURLFromCurrentResponse(forward)
+	if err != nil {
+		return nil, false
+	}
+
+	body, ok := cache.Get(*url)
+	if !ok {
+		return nil, false
+	}
+
+	response, err := getMapResponseFrom(body)
+	if err != nil {
+		return nil, false
+	}
+
+	return response, true
+}
+
+func getMapsFromApi(forward bool) (*MapResponse, error) {
 	url, err := getURLFromCurrentResponse(forward)
 	if err != nil {
 		return nil, err
@@ -50,16 +84,9 @@ func getMaps(forward bool) (*MapResponse, error) {
 		return nil, err
 	}
 
-	data := []byte(body)
-	response := MapResponse{}
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		error := errors.New("A problem happened when the program tries to decode the response.")
-		return nil, error
-	}
-
-	currentResponse = &response
-	return &response, nil
+	response, err := getMapResponseFrom(body)
+	cache.Add(*url, body)
+	return response, err
 }
 
 func getURLFromCurrentResponse(forward bool) (*string, error) {
@@ -67,7 +94,7 @@ func getURLFromCurrentResponse(forward bool) (*string, error) {
 		return nil, errors.New("You can't go backward !")
 	}
 
-	url := "https://pokeapi.co/api/v2/location"
+	url := "https://pokeapi.co/api/v2/location?offset=0&limit=20"
 
 	if currentResponse != nil {
 		if forward {
@@ -86,4 +113,16 @@ func getURLFromCurrentResponse(forward bool) (*string, error) {
 	}
 
 	return &url, nil
+}
+
+func getMapResponseFrom(byte []byte) (*MapResponse, error) {
+	response := MapResponse{}
+	err := json.Unmarshal(byte, &response)
+	if err != nil {
+		error := errors.New("A problem happened when the program tries to decode the response.")
+		return nil, error
+	}
+
+	currentResponse = &response
+	return &response, nil
 }
