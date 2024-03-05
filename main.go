@@ -17,7 +17,7 @@ func main() {
 		if cmd, ok := commands[scanner.Text()]; ok {
 			cmd.Callback()
 		} else {
-			fmt.Println("Command doesn't exist.\n")
+			fmt.Printf("Command doesn't exist.\n\n")
 		}
 	}
 
