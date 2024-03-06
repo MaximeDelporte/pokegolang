@@ -6,32 +6,32 @@ import (
 )
 
 type command struct {
-	Name string
+	Name        string
 	Description string
-	Callback func()
+	Callback    func()
 }
 
 func GetCommands() map[string]command {
 	return map[string]command{
 		"help": {
-			Name: 		 "help",
+			Name:        "help",
 			Description: "Displays a help message",
-			Callback: 	 commandHelp,
+			Callback:    commandHelp,
 		},
 		"exit": {
-			Name: 		 "exit",
+			Name:        "exit",
 			Description: "Exit the Pokedex",
-			Callback: 	 commandExit,
+			Callback:    commandExit,
 		},
 		"map": {
-			Name: 		 "map",
+			Name:        "map",
 			Description: "Get maps forward.",
-			Callback: 	 commandMap,
+			Callback:    commandMap,
 		},
 		"mapb": {
-			Name: 		 "mapb",
+			Name:        "mapb",
 			Description: "Get maps backward.",
-			Callback: 	 commandMapb,
+			Callback:    commandMapb,
 		},
 	}
 }
@@ -71,7 +71,12 @@ func handleMapResponse(response *MapResponse, err error) {
 
 	maps := response.Maps
 
-	for _, m := range maps {
-		fmt.Println(m.Name)
-	}
+	mF := maps[0]
+	mL := maps[len(maps)-1]
+	fmt.Println(mF.URL)
+	fmt.Println(mL.URL)
+
+	// for _, m := range maps {
+	// 	fmt.Println(m.Name)
+	// }
 }
