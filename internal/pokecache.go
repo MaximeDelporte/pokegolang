@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -19,7 +18,6 @@ type CacheEntry struct {
 
 func (c *Cache) Add(key string, value []byte) {
 	mu.Lock()
-	fmt.Println("Create cache for :", key)
 	c.cacheEntry[key] = CacheEntry{
 		createdAt: time.Now(),
 		val:       value,
@@ -36,12 +34,10 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 		return cacheEntry.val, true
 	}
 
-	fmt.Println("No cache for this entry")
 	return []byte{}, false
 }
 
 func NewCache(interval time.Duration) *Cache {
-	fmt.Println("Create cache !")
 	cache := &Cache{
 		cacheEntry: make(map[string]CacheEntry),
 	}
@@ -65,8 +61,7 @@ func (c *Cache) reapLoop(interval time.Duration) {
 		select {
 		case <-done:
 			mu.Lock()
-			fmt.Println("CLEAR CACHE")
-			c.cacheEntry = make(map[string]CacheEntry)
+			c.cacheEntry = nil
 			mu.Unlock()
 			return
 		}

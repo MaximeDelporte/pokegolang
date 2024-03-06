@@ -37,6 +37,7 @@ func GetPreviousMaps() (*MapResponse, error) {
 var currentResponse *MapResponse
 var cache *Cache
 
+// Get LOCAL OR REMOTE maps depending of the cache.
 func getMaps(forward bool) (*MapResponse, error) {
 	localResponse, ok := getLocalMaps(forward)
 	if ok {
@@ -49,17 +50,23 @@ func getMaps(forward bool) (*MapResponse, error) {
 
 // getLocalMaps: Get LOCAL maps from the cache.
 func getLocalMaps(forward bool) (*MapResponse, bool) {
-	if cache == nil {
+	cacheNotExists := true
+
+	if cache != nil && cache.cacheEntry != nil {
+		cacheNotExists = false
+	}
+
+	if cacheNotExists {
 		cache = NewCache(10 * time.Second)
 		return nil, false
 	}
 
-	url, err := getURLFromCurrentResponse(forward)
+	key, err := getURLFromCurrentResponse(forward)
 	if err != nil {
 		return nil, false
 	}
 
-	body, ok := cache.Get(*url)
+	body, ok := cache.Get(*key)
 	if !ok {
 		return nil, false
 	}

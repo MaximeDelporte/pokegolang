@@ -7,7 +7,7 @@ import (
 )
 
 func TestAddGet(t *testing.T) {
-	const interval = 5 * time.Second
+	const interval = 5 * time.Millisecond
 	cases := []struct {
 		key string
 		val []byte
