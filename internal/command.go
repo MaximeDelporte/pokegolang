@@ -71,12 +71,7 @@ func handleMapResponse(response *MapResponse, err error) {
 
 	maps := response.Maps
 
-	mF := maps[0]
-	mL := maps[len(maps)-1]
-	fmt.Println(mF.URL)
-	fmt.Println(mL.URL)
-
-	// for _, m := range maps {
-	// 	fmt.Println(m.Name)
-	// }
+	for _, m := range maps {
+		fmt.Println(m.Name)
+	}
 }
