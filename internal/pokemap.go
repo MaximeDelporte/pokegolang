@@ -18,26 +18,37 @@ type MapResponse struct {
 	} `json:"results"`
 }
 
-var currentResponse *MapResponse
-var cache *Cache
+/*
+	Public Interface
+*/
 
 func GetNextMaps() (*MapResponse, error) {
-	response, ok := getMapsFromCache(true)
-	if !ok {
-		return getMapsFromApi(true)
-	}
-	return response, nil
+	return getMaps(true)
 }
 
 func GetPreviousMaps() (*MapResponse, error) {
-	response, ok := getMapsFromCache(false)
-	if !ok {
-		return getMapsFromApi(false)
-	}
-	return response, nil
+	return getMaps(false)
 }
 
-func getMapsFromCache(forward bool) (*MapResponse, bool) {
+/*
+	Private Interface
+*/
+
+var currentResponse *MapResponse
+var cache *Cache
+
+func getMaps(forward bool) (*MapResponse, error) {
+	localResponse, ok := getLocalMaps(forward)
+	if ok {
+		return localResponse, nil
+	}
+
+	remoteResponse, err := getRemoteMaps(forward)
+	return remoteResponse, err
+}
+
+// getLocalMaps: Get LOCAL maps from the cache.
+func getLocalMaps(forward bool) (*MapResponse, bool) {
 	if cache == nil {
 		cache = NewCache(10 * time.Second)
 		return nil, false
@@ -61,7 +72,8 @@ func getMapsFromCache(forward bool) (*MapResponse, bool) {
 	return response, true
 }
 
-func getMapsFromApi(forward bool) (*MapResponse, error) {
+// getRemoteMaps: Get REMOTE maps from the API.
+func getRemoteMaps(forward bool) (*MapResponse, error) {
 	url, err := getURLFromCurrentResponse(forward)
 	if err != nil {
 		return nil, err
@@ -84,39 +96,44 @@ func getMapsFromApi(forward bool) (*MapResponse, error) {
 		return nil, err
 	}
 
-	response, err := getMapResponseFrom(body)
 	cache.Add(*url, body)
-	return response, err
+	return getMapResponseFrom(body)
 }
 
-func getURLFromCurrentResponse(forward bool) (*string, error) {
-	if currentResponse == nil && forward == false {
-		return nil, errors.New("You can't go backward !")
-	}
+/*
+	Common Methods
+*/
 
-	url := "https://pokeapi.co/api/v2/location?offset=0&limit=20"
+func getURLFromCurrentResponse(wantToMoveForward bool) (*string, error) {
+	currentResponseExists := currentResponse != nil
 
-	if currentResponse != nil {
-		if forward {
-			if currentResponse.Next == nil {
-				return nil, errors.New("All the maps has been discovered.")
-			} else {
+	if currentResponseExists {
+		if wantToMoveForward {
+			if currentResponse.Next != nil {
 				return currentResponse.Next, nil
+			} else {
+				return nil, errors.New("All the maps has been discovered.")
 			}
 		} else {
-			if currentResponse.Previous == nil {
-				return nil, errors.New("You can't go backward !")
-			} else {
+			if currentResponse.Previous != nil {
 				return currentResponse.Previous, nil
+			} else {
+				return nil, errors.New("You can't go backward !")
 			}
 		}
+	} else {
+		if wantToMoveForward {
+			url := "https://pokeapi.co/api/v2/location?offset=0&limit=20"
+			return &url, nil
+		} else {
+			return nil, errors.New("You can't go backward !")
+		}
 	}
-
-	return &url, nil
 }
 
 func getMapResponseFrom(byte []byte) (*MapResponse, error) {
 	response := MapResponse{}
+
 	err := json.Unmarshal(byte, &response)
 	if err != nil {
 		error := errors.New("A problem happened when the program tries to decode the response.")
