@@ -8,7 +8,7 @@ import (
 type command struct {
 	Name        string
 	Description string
-	Callback    func()
+	Callback    func(parameter any)
 }
 
 func GetCommands() map[string]command {
@@ -33,10 +33,15 @@ func GetCommands() map[string]command {
 			Description: "Get maps backward.",
 			Callback:    commandMapb,
 		},
+		"explore": {
+			Name:        "explore",
+			Description: "Usage: explore city_name. Where a city_name is a value from map result.\nReturns a list of pokemon that can be found in this area.",
+			Callback:    commandExplore,
+		},
 	}
 }
 
-func commandHelp() {
+func commandHelp(parameter any) {
 	fmt.Printf("\nWelcome to the Pokedex!\n")
 	fmt.Printf("Usage:\n\n")
 
@@ -49,16 +54,16 @@ func commandHelp() {
 	fmt.Printf("\n")
 }
 
-func commandExit() {
+func commandExit(parameter any) {
 	os.Exit(0)
 }
 
-func commandMap() {
+func commandMap(parameter any) {
 	response, err := GetNextMaps()
 	handleMapResponse(response, err)
 }
 
-func commandMapb() {
+func commandMapb(parameter any) {
 	response, err := GetPreviousMaps()
 	handleMapResponse(response, err)
 }
@@ -73,5 +78,21 @@ func handleMapResponse(response *MapResponse, err error) {
 
 	for _, m := range maps {
 		fmt.Println(m.Name)
+	}
+}
+
+func commandExplore(anyCity any) {
+	//pastoria-city-area
+	city := anyCity.(string)
+	response, err := GetPokemonsFrom(city)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	pokemons := response.Pokemons
+	for _, pokemon := range pokemons {
+		fmt.Println(pokemon.Pokemon.Name)
 	}
 }
