@@ -18,13 +18,13 @@ func main() {
 		stringCmd := args[0]
 
 		if cmd, ok := commands[stringCmd]; ok {
-			if stringCmd == "explore" {
+			if stringCmd == "explore" || stringCmd == "catch" {
 				if len(args) != 2 {
-					fmt.Printf("explore command is invalid. Call help to see the usage.\n\n")
+					fmt.Printf("command is invalid. Call help to see the usage.\n\n")
 					return
 				}
-				city := args[1]
-				cmd.Callback(city)
+				argument := args[1]
+				cmd.Callback(argument)
 			} else {
 				cmd.Callback(nil)
 			}

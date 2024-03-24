@@ -34,9 +34,14 @@ func GetCommands() map[string]command {
 			Callback:    commandMapb,
 		},
 		"explore": {
-			Name:        "explore",
-			Description: "Usage: explore city_name. Where a city_name is a value from map result.\nReturns a list of pokemon that can be found in this area.",
+			Name:        "explore [city_name]",
+			Description: "Usage: explore city_name. Where a city_name is a value from map result. Returns a list of pokemon that can be found in this area.",
 			Callback:    commandExplore,
+		},
+		"catch": {
+			Name:        "catch [pokemon]",
+			Description: "Usage: catch [pokemon] where pokemon is the name of the pokemon found in the list of the explore command",
+			Callback:    commandCatch,
 		},
 	}
 }
@@ -82,7 +87,6 @@ func handleMapResponse(response *MapResponse, err error) {
 }
 
 func commandExplore(anyCity any) {
-	//pastoria-city-area
 	city := anyCity.(string)
 	response, err := GetPokemonsFrom(city)
 
@@ -95,4 +99,9 @@ func commandExplore(anyCity any) {
 	for _, pokemon := range pokemons {
 		fmt.Println(pokemon.Pokemon.Name)
 	}
+}
+
+func commandCatch(anyPokemon any) {
+	pokemon := anyPokemon.(string)
+	CatchPokemon(pokemon)
 }
