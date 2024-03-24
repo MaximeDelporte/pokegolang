@@ -5,7 +5,7 @@ import "fmt"
 func InspectPokemon(name string) {
 	if pokemon, ok := pokedex.pokemons[name]; ok {
 		fmt.Printf("Height: %d\n", pokemon.Height)
-		fmt.Printf("Height: %d\n", pokemon.Weight)
+		fmt.Printf("Weight: %d\n", pokemon.Weight)
 
 		fmt.Println("Stats:")
 		for _, stat := range pokemon.Stats {
