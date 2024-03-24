@@ -18,7 +18,7 @@ func main() {
 		stringCmd := args[0]
 
 		if cmd, ok := commands[stringCmd]; ok {
-			if stringCmd == "explore" || stringCmd == "catch" {
+			if commandNeedArgument(stringCmd) {
 				if len(args) != 2 {
 					fmt.Printf("command is invalid. Call help to see the usage.\n\n")
 					return
@@ -36,4 +36,8 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
+}
+
+func commandNeedArgument(cmd string) bool {
+	return cmd == "explore" || cmd == "catch" || cmd == "inspect"
 }

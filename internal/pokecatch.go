@@ -291,7 +291,7 @@ func CatchPokemon(name string) {
 	is_catch := rand.Intn(chance.probability) == 1
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
 	if is_catch {
-		fmt.Printf("%s was caught!\n", pokemonName)
+		fmt.Printf("%s was caught!\n\n", pokemonName)
 		pokedex.save(*pokemon)
 	} else {
 		fmt.Printf("%s escaped!\n\n", pokemonName)

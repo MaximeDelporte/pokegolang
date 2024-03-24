@@ -43,6 +43,11 @@ func GetCommands() map[string]command {
 			Description: "Usage: catch [pokemon] where pokemon is the name of the pokemon found in the list of the explore command",
 			Callback:    commandCatch,
 		},
+		"inspect": {
+			Name:        "inspect [pokemon]",
+			Description: "Usage: inspect [pokemon] where pokemon is the name of the caught pokemon. You need to capture it before inspect it!",
+			Callback:    commandInspect,
+		},
 	}
 }
 
@@ -104,4 +109,9 @@ func commandExplore(anyCity any) {
 func commandCatch(anyPokemon any) {
 	pokemon := anyPokemon.(string)
 	CatchPokemon(pokemon)
+}
+
+func commandInspect(anyPokemon any) {
+	pokemon := anyPokemon.(string)
+	InspectPokemon(pokemon)
 }
